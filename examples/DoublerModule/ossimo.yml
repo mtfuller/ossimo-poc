@@ -1,0 +1,9 @@
+DoublerModule:
+    type: module
+
+    interface:
+        double(int a): int
+    
+    implementation:
+        platform: python3
+        file: ./src/DoublerModule.py

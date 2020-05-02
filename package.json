@@ -1,0 +1,38 @@
+{
+  "name": "ossimo-poc",
+  "version": "0.1.0",
+  "description": "A platform that encourages adaptability and clarity in software systems ",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "bin": {
+    "ossimo": "bin/ossimo",
+    "ossimo-server": "bin/ossimo-server"
+  },
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "mocha"
+  },
+  "keywords": [
+    "ossimo",
+    "system",
+    "components"
+  ],
+  "author": "Thomas Fuller",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^7.1.2"
+  },
+  "dependencies": {
+    "chalk": "^4.0.0",
+    "esm": "^3.2.25",
+    "js-yaml": "^3.13.1",
+    "listr": "^0.14.3",
+    "ncp": "^2.0.0",
+    "prompts": "^2.3.2",
+    "winston": "^3.2.1",
+    "yargs": "^15.3.1"
+  }
+}

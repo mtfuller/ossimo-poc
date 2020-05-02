@@ -1,0 +1,11 @@
+ExampleModule:
+    type: module
+
+    interface:
+        add(int a, int b): int
+        mul(int a, int b): int
+        sub(int a, int b): int
+    
+    implementation:
+        platform: python3
+        file: ./src/SampleModule.py

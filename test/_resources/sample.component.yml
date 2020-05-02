@@ -1,0 +1,9 @@
+SampleComponent:
+  interface:
+    doubleNumber:
+      number: int32
+
+  modules:
+    default:
+      platform: python3
+      entry: src/main.py

@@ -1,0 +1,5 @@
+Post:
+  title: string
+  body: string
+  author: User
+  comments: Array<Comments>
