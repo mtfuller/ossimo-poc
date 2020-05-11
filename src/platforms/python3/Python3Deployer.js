@@ -1,55 +1,18 @@
-const path = require('path');
-const fs = require('fs');
+import BaseDeployer from '../../core/platform/BaseDeployer';
 
-import { OssimoOrchestratorClient } from '../../orchestrator';
-
-const { exec } = require('child_process');
-
-class BaseModuleBuilder {
+/**
+ * The Deployer for the Python3 platform.
+ */
+class Python3Deployer extends BaseDeployer {
     constructor() {
-        this._interface = null;
-        this.transport = null;
-        this.moduleDir = null;
-        this.sourceDir = null;
-        this.buildDir = null;
-        this.generatedDir = null;
-    }
-
-    setInterface(_interface) {
-        this._interface = _interface;
-    }
-
-    setTransport(transport) {
-        this.transport = transport;
-    }
-
-    setModuleDir(moduleDir) {
-        this.moduleDir = moduleDir;
-        this.sourceDir = path.join(this.moduleDir, 'src');
-        this.buildDir = path.join(this.moduleDir, 'build');
-        this.generatedDir = path.join(this.moduleDir, '.generated');
-    }
-
-    build() {
-        throw new Error("BaseModuleBuilder::build must be implemented");
-    }
-}
-
-class Python3Deployer {
-    constructor() {
-        this.buildDir = null;
-        this.ossimoOrchestrator = new OssimoOrchestratorClient(13131);
-    }
-
-    setBuildDir(buildDir) {
-        this.buildDir = buildDir;
+        super();
     }
 
     async deploy() {
         console.log(this.buildDir);
 
         console.log("Deploy:");
-        console.log(await this.ossimoOrchestrator.deploy(
+        console.log(await this.orchestratorClient.deploy(
             "test789",
             "python main.py 8082",
             this.buildDir

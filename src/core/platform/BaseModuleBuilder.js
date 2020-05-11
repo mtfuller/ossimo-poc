@@ -1,13 +1,24 @@
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
+import { removeExistingDirectoryTree } from '../../util/fs-util';
+
+/**
+ * The abstract base class for a ModuleBuilder of some language platform.
+ */
 class BaseModuleBuilder {
     constructor() {
+        this.moduleName = null;
         this._interface = null;
         this.transport = null;
         this.moduleDir = null;
         this.sourceDir = null;
         this.buildDir = null;
         this.generatedDir = null;
+    }
+
+    setModuleName(moduleName) {
+        this.moduleName = moduleName;
     }
 
     setInterface(_interface) {
@@ -25,7 +36,20 @@ class BaseModuleBuilder {
         this.generatedDir = path.join(this.moduleDir, '.generated');
     }
 
-    build() {
+    /**
+     * Removes all build related files and assets.
+     */
+    clean() {
+        if (fs.existsSync(this.buildDir)) {
+            removeExistingDirectoryTree(this.buildDir);
+        }
+    }
+
+    /**
+     * Generate and package all the necessary build files to allow the module
+     * to be deployed.
+     */
+    async build() {
         throw new Error("BaseModuleBuilder::build must be implemented");
     }
 }

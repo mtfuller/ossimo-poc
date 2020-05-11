@@ -1,41 +1,34 @@
-const path = require('path');
-const fs = require('fs');
+import fs from 'fs';
+import path from 'path';
 
-class Python3Generator {
+import BaseGenerator from '../../core/platform/BaseGenerator';
+
+/**
+ * The Generator for the Python3 platform.
+ */
+class Python3Generator extends BaseGenerator {
     constructor(generatedDir) {
-        this.generatedDir = generatedDir
+        super(generatedDir);
     }
 
-    clean() {
-        if (fs.existsSync(this.generatedDir)) {
-            const deleteFolderRecursive = function(path) {
-                var files = [];
-                if( fs.existsSync(path) ) {
-                    files = fs.readdirSync(path);
-                    files.forEach(function(file,index){
-                        var curPath = path + "/" + file;
-                        if(fs.lstatSync(curPath).isDirectory()) { // recurse
-                            deleteFolderRecursive(curPath);
-                        } else { // delete file
-                            fs.unlinkSync(curPath);
-                        }
-                    });
-                    fs.rmdirSync(path);
-                }
-            };
-            deleteFolderRecursive(this.generatedDir);
-        }
-    }
-
-    generateMain(_interface) {
+    /**
+     * Generate the main.py, the entry point of the Ossimo module to be run.
+     * 
+     * @param {Object} _interface Object that describes the interface of the
+     * component
+     * 
+     * @returns {string} Output path of the newly generated main.py file
+     */
+    generateMain(module_name, _interface) {
         this.clean();
+        
         fs.mkdirSync(this.generatedDir);
 
+        // Grab main.py template
         const mainTemplatePath = path.join(__dirname, 'templates', 'main.py');
         let mainTemplate = fs.readFileSync(mainTemplatePath).toString();
 
-        console.log(_interface);
-
+        // Generate necessary source code
         let str = "";
         const typeSet = new Set();
         for (let methodName in _interface) {
@@ -54,8 +47,10 @@ class Python3Generator {
             str += `\n`;
         }
         mainTemplate = mainTemplate.replace('{{INSERT}}', str)
+        mainTemplate = mainTemplate.replace('{{MODULE_NAME}}', module_name)
         const finalGeneratedOutput = mainTemplate.replace('{{METHOD_LIST}}', Object.keys(_interface).join(', '))
         
+        // Write main.py to the generated directory
         const outputFile = path.join(this.generatedDir, 'main.py');
         fs.writeFileSync(outputFile, finalGeneratedOutput, { encoding: 'utf-8'});
 

@@ -1,25 +1,34 @@
+import path from 'path';
+
+import BaseConstruct from '../core/constructs/BaseConstruct';
 import OssimoFile from '../core/OssimoFile';
 import ModuleComponent from './components/ModuleComponent';
 import ControllerComponent from './components/ControllerComponent';
-import BaseConstruct from '../core/BaseConstruct';
 
-const path = require('path');
+const DEFAULT_OSSIMO_FILENAME = "ossimo.yml";
 
+/**
+ * Creates and returns an instance based on the type defined in the ossimo.yml
+ * file.
+ * 
+ * @param {string} constructDir The root directory of the Ossimo construct,
+ * containing an ossimo.yml file.
+ *  
+ * @returns {BaseConstruct} An instance of the appropriate construct type,
+ * defined in the ossimo.yml file.
+ */
 function constructFactory(constructDir) {
-    const ossimoFilePath = path.join(constructDir, 'ossimo.yml');
+    const ossimoFilePath = path.join(constructDir, DEFAULT_OSSIMO_FILENAME);
     const ossimoFile = new OssimoFile(ossimoFilePath);
 
-    let construct = null;
     switch (ossimoFile.type) {
         case 'module': 
-            construct = new ModuleComponent(ossimoFile); break;
+            return new ModuleComponent(ossimoFile);
         case 'controller': 
-            construct = new ControllerComponent(ossimoFile); break;
+            return new ControllerComponent(ossimoFile);
         default:
-            construct = new BaseConstruct(ossimoFile);
+            return new BaseConstruct(ossimoFile);
     }
-
-    return construct;
 }
 
 export default constructFactory;

@@ -1,0 +1,9 @@
+TriplerModule:
+    type: module
+
+    interface:
+        triple(int a): int
+    
+    implementation:
+        platform: python3
+        file: ./src/TriplerModule.py

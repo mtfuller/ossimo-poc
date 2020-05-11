@@ -1,10 +1,10 @@
 import ConstructFactory from './ConstructFactory';
 
-import { OssimoOrchestratorClient, Deployment } from '../orchestrator';
-
-const net = require('net');
-const path = require('path');
-
+/**
+ * The workspace class is used explore a given Ossimo directory, provide
+ * information about the project or component, and perform build and deployment
+ * related tasks.
+ */
 class Workspace {
     constructor(dirPath) {
         this.workingDir = dirPath;
@@ -12,18 +12,26 @@ class Workspace {
         this.construct = ConstructFactory(this.workingDir);
 
         this.project = null;
-
-        console.log(this);
     }
 
+    /**
+     * Cleans the entire workspace of generated build and deployment files from
+     * the Ossimo project or component.
+     */
     clean() {
         this.construct.clean();
     }
 
-    build() {
+    /**
+     * Builds the Ossimo project or component that the workspace is looking at.
+     */
+    async build() {
         this.construct.build();
     }
 
+    /**
+     * Deploys the Ossimo project or component.
+     */
     async deploy() {
         if (!this.construct.isBuilt()) {
             throw new Error("Workspace is not built. Build and then run deploy")

@@ -1,0 +1,10 @@
+MultiplierController:
+    type: controller
+
+    interface:
+        doubleThisNumber(int a): int
+        tripleThisNumber(int b): int
+    
+    delegation:
+        doubleThisNumber(int a): DoublerModule.double(a)
+        tripleThisNumber(int b): TriplerModule.triple(b)

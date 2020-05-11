@@ -1,7 +1,7 @@
 from ossimo.Transport import Transport
 from ossimo.Controller import ControllerMethodBuilder, Controller
 from ossimo.Datatypes import int32
-from implementation.SampleModule import {{METHOD_LIST}}
+from implementation.{{MODULE_NAME}} import {{METHOD_LIST}}
 import sys
 
 def main(port):

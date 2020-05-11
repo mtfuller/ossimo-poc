@@ -1,8 +1,10 @@
-export const bool = "bool";
-export const byte = "byte";
-export const int32 = "int32";
-export const int64 = "int64";
-export const float32 = "float32";
-export const float64 = "float64";
-export const array = "Array";
-export const string = "string";
+export default {
+    bool: "bool",
+    byte: "byte",
+    int32: "int32",
+    int64: "int64",
+    float32: "float32",
+    float64: "float64",
+    array: "array",
+    string: "string"
+}
