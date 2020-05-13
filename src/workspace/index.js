@@ -10,8 +10,6 @@ class Workspace {
         this.workingDir = dirPath;
 
         this.construct = ConstructFactory(this.workingDir);
-
-        this.project = null;
     }
 
     /**

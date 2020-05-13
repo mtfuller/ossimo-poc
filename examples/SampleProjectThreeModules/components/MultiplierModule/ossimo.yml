@@ -1,0 +1,10 @@
+MultiplierModule:
+    type: module
+
+    interface:
+        quadruple(int a): int
+        timesSix(int a): int
+    
+    implementation:
+        platform: python3
+        file: ./src/MultiplierModule.py

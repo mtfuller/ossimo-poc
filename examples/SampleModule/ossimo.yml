@@ -1,4 +1,4 @@
-ExampleModule:
+SampleModule:
     type: module
 
     interface:

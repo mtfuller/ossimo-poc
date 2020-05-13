@@ -14,7 +14,7 @@ class Python3Deployer extends BaseDeployer {
         console.log("Deploy:");
         console.log(await this.orchestratorClient.deploy(
             "test789",
-            "python main.py 8082",
+            "python server.py 8082",
             this.buildDir
         ));
         console.log("====");

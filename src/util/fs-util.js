@@ -36,3 +36,9 @@ export async function copyEntireDirectory(sourcePath, targetPath, options = {
         });
     });
 }
+
+export function createDirectoryIfNoneExist(dirPath) {
+    if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath);
+    }
+}

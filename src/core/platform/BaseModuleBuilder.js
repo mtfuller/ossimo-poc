@@ -41,17 +41,35 @@ class BaseModuleBuilder {
      */
     clean() {
         if (fs.existsSync(this.buildDir)) {
+            console.log("REMOVING");
             removeExistingDirectoryTree(this.buildDir);
         }
     }
 
-    /**
-     * Generate and package all the necessary build files to allow the module
-     * to be deployed.
-     */
-    async build() {
-        throw new Error("BaseModuleBuilder::build must be implemented");
+    setup() {
+        console.log("SETUP");
+        this.clean();
+
+        fs.mkdirSync(this.buildDir);
     }
+
+    buildInterface() {
+        throw new Error("BaseModuleBuilder::buildInterface must be implemented");
+    }
+
+    buildPackage() {
+        throw new Error("BaseModuleBuilder::buildPackage must be implemented");
+    }
+
+
+
+    // /**
+    //  * Generate and package all the necessary build files to allow the module
+    //  * to be deployed.
+    //  */
+    // async build() {
+    //     throw new Error("BaseModuleBuilder::build must be implemented");
+    // }
 }
 
 export default BaseModuleBuilder;
