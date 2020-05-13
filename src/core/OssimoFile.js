@@ -2,6 +2,11 @@ const fs = require('fs');
 import yaml from 'js-yaml';
 
 class OssimoFile {
+    /**
+     * Inits and parses the ossimo.yml file specified by the filePath.
+     * 
+     * @param {string} filePath The path to the ossimo.yml to parse
+     */
     constructor(filePath) {
         if (!fs.existsSync(filePath)) {
             throw Error(`The Ossimo File does not exist: ${filePath}`);
@@ -20,6 +25,13 @@ class OssimoFile {
         this.implementation = this.__getValueOrNull(fileContents, 'implementation');
     }
 
+    /**
+     * Returns the value of the given property in the fileContents object, only
+     * if the property exists. If it doesn't exist, return null.
+     * 
+     * @param {Object} fileContents The object to search through
+     * @param {string} prop The property to search for 
+     */
     __getValueOrNull(fileContents, prop) {
         return (fileContents.hasOwnProperty(prop)) ? fileContents[prop]: null;
     }

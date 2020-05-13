@@ -1,10 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 
-const { exec } = require("child_process");
-
 import { removeExistingDirectoryTree, createDirectoryIfNoneExist } from '../../util/fs-util';
-import { execSync } from 'child_process';
+import { capitalize } from '../../util/string-util';
+
 
 /**
  * The abstract base class for a Generator of some language platform.
@@ -24,21 +23,27 @@ class BaseGenerator {
         }
     }
 
+    /**
+     * Clears the generatedDir of all content.
+     */
     setup() {
         this.clean();
 
         fs.mkdirSync(this.generatedDir);
     }
 
+    /**
+     * Generates a new Protobuf 3 file for a given moduleName and interface spec.
+     * 
+     * @param {string} moduleName The name of the module
+     * @param {Object} _interface The interface of the module
+     */
     generateProto3(moduleName, _interface) {
-        console.log("BaseGenerator::generateProto3");
         const packageName = moduleName.toLowerCase();
 
         let str = "";
         str += `syntax = "proto3";\n`;
         str += `package ${packageName};\n`;
-
-        const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
         let serviceDefinitionStr = "";
         let messageDefinitionStr = "";
@@ -47,16 +52,15 @@ class BaseGenerator {
             const requestName = `${serviceName}Request`;
             const responseName = `${serviceName}Response`;
 
-            // rpc Add (AddRequest) returns (AddReply) {}
+            // Ex. rpc Add (AddRequest) returns (AddReply) {}
             serviceDefinitionStr += `    rpc ${serviceName} (${requestName}) returns (${responseName}) {}\n`;
-
 
             messageDefinitionStr += `message ${requestName} {\n`
             for (const index in _interface[methodName].params) {
                 const datatype = _interface[methodName].params[index].datatype;
                 const paramName = _interface[methodName].params[index].name;
 
-                // int32 b = 2;
+                // Ex. int32 b = 2;
                 messageDefinitionStr += `    ${datatype} ${paramName} = ${parseInt(index) + 1};\n`
             }
             messageDefinitionStr += `}\n`
@@ -70,9 +74,6 @@ class BaseGenerator {
         str += `}\n\n`;
 
         str += messageDefinitionStr;
-
-        console.log(str);
-
         
         createDirectoryIfNoneExist(path.join(this.generatedDir, 'proto'))
         const protoFilePath = path.join(this.generatedDir, 'proto', `${packageName}.proto`);
@@ -80,28 +81,39 @@ class BaseGenerator {
         return protoFilePath;
     }
 
+    /**
+     * Generate the gRPC module for the desired platform.
+     * 
+     * @param {string} moduleName The name of the module
+     * @param {string} sourceProtoFilepath The filepath of the Protobuf .proto
+     *  file
+     */
     generateGRPC(moduleName, sourceProtoFilepath) {
-        console.log("BaseGenerator::generateGRPC");
+        throw new Error("BaseGenerator::generateGRPC must be implemented")
+    }
 
-        const packageName = moduleName.toLowerCase();
-        const targetDirectory = this.generatedDir;
+    /**
+     * Generates a new file where all of the template variables of the given
+     * template file have been replaced by the corresponding values defined
+     * in data.
+     * 
+     * @param {string} templateFilePath The filepath to the template file
+     * @param {Object} data An object that has each template variable mapped to
+     *  a value.
+     */
+    generatePlatformFileFromTemplate(templateFilePath, data={}) {
+        const outputFilename = path.basename(templateFilePath);
+        let templateContents = fs.readFileSync(templateFilePath).toString();
 
-        createDirectoryIfNoneExist(path.join(this.generatedDir, 'grpc'))
+        // Inject data values into the template
+        const insertTextPattern = /\{\{(\w*)\}\}/g;
+        templateContents = templateContents.replace(insertTextPattern, (match, p) => data[p]);
 
-        console.log(targetDirectory);
+        // Create a new file in the generated directory
+        const outputFile = path.join(this.generatedDir, outputFilename);
+        fs.writeFileSync(outputFile, templateContents, { encoding: 'utf-8'});
 
-        execSync(`python -m grpc_tools.protoc -I ./proto/ --python_out=./grpc --grpc_python_out=./grpc ./proto/${packageName}.proto`, {
-            cwd: targetDirectory
-        });
-
-        const grpcFilePath = path.join(targetDirectory, 'grpc', `${packageName}_pb2_grpc.py`);
-        let fileContent = fs.readFileSync(grpcFilePath, { encoding: 'utf-8'});
-
-        const oldImportStatement = `import ${packageName}_pb2 as ${packageName}__pb2`;
-        const newImportStatement = `from . ${oldImportStatement}`;
-        fileContent = fileContent.replace(oldImportStatement, newImportStatement);
-        
-        fs.writeFileSync(grpcFilePath, fileContent, {encoding: 'utf-8'});
+        return outputFile;
     }
 }
 

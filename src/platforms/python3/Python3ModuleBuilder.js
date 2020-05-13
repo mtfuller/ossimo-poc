@@ -13,39 +13,34 @@ class Python3ModuleBuilder extends BaseModuleBuilder {
         super();
     }
 
-    mapMethodName(methodName, methodAlias) {
-        this._interface[methodName]['alias'] = methodAlias;
-        console.log(this._interface);
-    }
-
-    async buildStandalone() {
-        // Generate main.py
-        console.log("GENERATOR")
+    async build() {
         const python3Generator = new Python3Generator(this.generatedDir);
+
         python3Generator.setup();
-        //const mainFilePath = python3Generator.generateMain(this.moduleName, this._interface);
-        console.log("PROTO")
+
+        // Generate server & client
         const protoFilePath = python3Generator.generateProto3(this.moduleName, this._interface);
-        console.log("GRPC")
         python3Generator.generateGRPC(this.moduleName, protoFilePath);
         const serverFilePath = python3Generator.generateServer(this.moduleName, this._interface);
         const clientFilePath = python3Generator.generateClient(this.moduleName, this._interface);
-        const serverFileName = path.basename(serverFilePath);
-        const clientFileName = path.basename(clientFilePath);
-        fs.copyFileSync(serverFilePath, path.join(this.buildDir, serverFileName));
-        fs.copyFileSync(clientFilePath, path.join(this.buildDir, clientFileName));
+
+        // Copy server & client files
+        fs.copyFileSync(serverFilePath, path.join(this.buildDir, path.basename(serverFilePath)));
+        fs.copyFileSync(clientFilePath, path.join(this.buildDir, path.basename(clientFilePath)));
 
         // Generate Ossimo SDK
         const grpcPath = path.join(this.generatedDir, 'grpc');
         const ossimoPath = path.join(this.buildDir, 'ossimo');
-        await this.buildPackage(grpcPath, ossimoPath);
+        await this.__buildPackage(grpcPath, ossimoPath);
 
         // Build Implementation Package
         const targetImplementationPath = path.join(this.buildDir, 'implementation');
-        await this.buildPackage(this.sourceDir, targetImplementationPath);
+        await this.__buildPackage(this.sourceDir, targetImplementationPath);
+
+        python3Generator.clean();
     }
 
-    async buildPackage(sourceDir, targetPackageDir) {
+    async __buildPackage(sourceDir, targetPackageDir) {
         await copyEntireDirectory(sourceDir, targetPackageDir);
         fs.writeFileSync(path.join(targetPackageDir, '__init__.py'),"");
     }

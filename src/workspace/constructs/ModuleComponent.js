@@ -77,32 +77,11 @@ class ModuleComponent extends BaseComponent {
         this.moduleBuilder.clean();
     }
 
-    async build(options=null) {
-        let delegatedMethods = {};
-        if (options !== null) {
-            delegatedMethods = options.delegatedMethods;
-        }
-
-        logger.info(`Building ${this.ossimoFile.name} module...`);
-
+    async build() {
         this.moduleBuilder.setup();
 
-        for (const methodName in delegatedMethods) {
-            const methodInfo = delegatedMethods[methodName];
-            console.log(methodInfo);
-            this.moduleBuilder.mapMethodName(methodInfo.method, methodName)
-        }
-
-        await this.moduleBuilder.buildStandalone();
-
-        // switch(type) {
-        //     case 'standalone':
-        //         await this.moduleBuilder.buildStandalone(); break;
-        //     case 'package':
-        //         await this.moduleBuilder.buildPackage(); break;
-        //     default:
-        //         throw new Error('Build type is not valid');
-        // }
+        logger.info(`Building ${this.ossimoFile.name} module...`);
+        await this.moduleBuilder.build();
     }
 
     isBuilt() {
