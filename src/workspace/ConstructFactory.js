@@ -3,7 +3,7 @@ import path from 'path';
 import BaseConstruct from '../core/constructs/BaseConstruct';
 import OssimoFile from '../core/OssimoFile';
 import ModuleComponent from './constructs/ModuleComponent';
-import ProjectComponent from './constructs/ProjectComponent';
+import ProjectConstruct from './constructs/ProjectConstruct';
 import ControllerComponent from './constructs/ControllerComponent'; 
 
 const DEFAULT_OSSIMO_FILENAME = "ossimo.yml";
@@ -28,7 +28,7 @@ function constructFactory(constructDir) {
         case 'controller': 
             return new ControllerComponent(ossimoFile);
         case 'project': 
-            return new ProjectComponent(ossimoFile);
+            return new ProjectConstruct(ossimoFile);
         default:
             return new BaseConstruct(ossimoFile);
     }

@@ -1,23 +1,30 @@
 import BaseDeployer from '../../core/platform/BaseDeployer';
 
+import { exec } from 'child_process';
+
 /**
  * The Deployer for the Python3 platform.
  */
 class Python3Deployer extends BaseDeployer {
     constructor() {
         super();
+        this.directory = null
     }
 
-    async deploy() {
-        console.log(this.buildDir);
+    setDir(dir) {
+        this.directory = dir;
+    }
 
-        console.log("Deploy:");
-        console.log(await this.orchestratorClient.deploy(
-            "test789",
-            "python server.py 8082",
-            this.buildDir
-        ));
-        console.log("====");
+    run(callback) {
+        try {
+            exec("python server.py", {cwd: this.directory}, callback).on('error', (err) => {
+                console.error("ERROR!!");
+                console.error(err);
+            });
+        } catch (error) {
+            console.log(error);
+        }
+        
     }
 }
 

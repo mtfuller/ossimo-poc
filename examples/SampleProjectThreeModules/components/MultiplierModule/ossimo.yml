@@ -1,6 +1,10 @@
 MultiplierModule:
     type: module
 
+    dependencies:
+        - DoublerModule
+        - TriplerModule
+
     interface:
         quadruple(int a): int
         timesSix(int a): int

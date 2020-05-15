@@ -34,6 +34,8 @@ class Python3Generator extends BaseGenerator {
         fileContent = fileContent.replace(oldImportStatement, newImportStatement);
         
         fs.writeFileSync(grpcFilePath, fileContent, {encoding: 'utf-8'});
+
+        return grpcFilePath;
     }
 
     /**
@@ -58,8 +60,8 @@ class Python3Generator extends BaseGenerator {
 
             const paramNames = params.join(', ');
             moduleServerMethods += `            result = ${moduleName}.${methodName}(${paramNames})\n`;
-            moduleServerMethods += `        except:\n`;
-            moduleServerMethods += `            logging.error("AHHH!!! ERROR!!")\n`;
+            moduleServerMethods += `        except Exception as e:\n`;
+            moduleServerMethods += `            logging.error(e)\n`;
             moduleServerMethods += `        return ${packageName}_pb2.${capitalize(methodName)}Response(result=result)\n\n`;
         }
 
@@ -96,7 +98,7 @@ class Python3Generator extends BaseGenerator {
             moduleClientMethods += `        with grpc.insecure_channel(self.server_address) as channel:\n`
             moduleClientMethods += `            stub = ${packageName}_pb2_grpc.${moduleName}Stub(channel)\n`
             moduleClientMethods += `            myResult = stub.${capitalize(methodName)}(request)\n`
-            moduleClientMethods += `        return myResult\n\n`
+            moduleClientMethods += `        return myResult.result\n\n`
         }
 
         const serverTemplatePath = path.join(__dirname, 'templates', 'client.py');
@@ -104,6 +106,22 @@ class Python3Generator extends BaseGenerator {
             MODULE_PACKAGE_NAME: packageName,
             MODULE_NAME: moduleName,
             MODULE_CLIENT_METHODS: moduleClientMethods
+        })
+
+        return outputFile;
+    }
+
+        /**
+     * Generate the client python file
+     * 
+     * @param {string} moduleName The name of the module to generate the client
+     *  code for
+     * @param {Object} _interface The interface of the module
+     */
+    generateClientPackageFile(moduleName) {
+        const serverTemplatePath = path.join(__dirname, 'templates', 'client_package_init.py');
+        const outputFile = this.generatePlatformFileFromTemplate(serverTemplatePath, {
+            MODULE_NAME: moduleName
         })
 
         return outputFile;

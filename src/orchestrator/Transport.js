@@ -15,7 +15,8 @@ export class IPCServer {
                 socket.end(preparedResponse);
             });
         }).on('error', (err) => {
-            throw err;
+            console.error("ERROR:")
+            console.error(err);
         });
     }
 

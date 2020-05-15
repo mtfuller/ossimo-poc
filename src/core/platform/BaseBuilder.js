@@ -4,16 +4,14 @@ import path from 'path';
 import { removeExistingDirectoryTree } from '../../util/fs-util';
 
 /**
- * The abstract base class for a ModuleBuilder of some language platform.
+ * The abstract base class for a Builder of some language platform.
  */
-class BaseModuleBuilder {
+class BaseBuilder {
     constructor() {
         this.moduleName = null;
         this._interface = null;
-        this.transport = null;
-        this.moduleDir = null;
-        this.sourceDir = null;
         this.buildDir = null;
+        this.sourceDir = null;
         this.generatedDir = null;
     }
 
@@ -25,15 +23,13 @@ class BaseModuleBuilder {
         this._interface = _interface;
     }
 
-    setTransport(transport) {
-        this.transport = transport;
+    setBuildDir(buildDir) {
+        this.buildDir = buildDir;
+        this.generatedDir = path.join(this.buildDir, '.generated');
     }
 
-    setModuleDir(moduleDir) {
-        this.moduleDir = moduleDir;
-        this.sourceDir = path.join(this.moduleDir, 'src');
-        this.buildDir = path.join(this.moduleDir, 'build');
-        this.generatedDir = path.join(this.moduleDir, '.generated');
+    setSourceDir(sourceDir) {
+        this.sourceDir = sourceDir;
     }
 
     /**
@@ -60,9 +56,17 @@ class BaseModuleBuilder {
      * Generate and package all the necessary build files to allow the module
      * to be deployed.
      */
-    async build() {
-        throw new Error("BaseModuleBuilder::build must be implemented");
+    async buildModule() {
+        throw new Error("BaseBuilder::buildModule must be implemented");
+    }
+
+    /**
+     * Generate and package all the necessary build files to allow the module
+     * to be deployed.
+     */
+    async buildSdk() {
+        throw new Error("BaseBuilder::buildSdk must be implemented");
     }
 }
 
-export default BaseModuleBuilder;
+export default BaseBuilder;

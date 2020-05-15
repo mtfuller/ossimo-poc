@@ -5,6 +5,7 @@ import BaseComponent from '../../core/constructs/BaseComponent';
 import Transport from '../../core/Transport';
 import { OssimoOrchestratorClient } from '../../orchestrator';
 import logger from '../../util/logger';
+import { platformFactory } from '../PlatformFactory';
 
 /**
  * Implements the BaseComponent class to build and deploy Ossimo modules.
@@ -27,11 +28,11 @@ class ModuleComponent extends BaseComponent {
          * ModuleBuilder is responsible for generating source code, building
          * the module, and packaging everything so that it is ready to deploy.
          */
-        this.moduleBuilder = new this.implementation.platform.ModuleBuilder();
+        this.moduleBuilder = new this.implementation.platform.Builder();
         this.moduleBuilder.setModuleName(this.ossimoFile.name);
         this.moduleBuilder.setInterface(this.interface);
-        this.moduleBuilder.setTransport(Transport.HTTP);
-        this.moduleBuilder.setModuleDir(this.constructDir);
+        this.moduleBuilder.setSourceDir(path.join(this.constructDir, 'src'));
+        this.moduleBuilder.setBuildDir(path.join(this.constructDir, 'build'));
 
         /**
          * Deployer is reponsible for deploying the built component to the
@@ -81,7 +82,20 @@ class ModuleComponent extends BaseComponent {
         this.moduleBuilder.setup();
 
         logger.info(`Building ${this.ossimoFile.name} module...`);
-        await this.moduleBuilder.build();
+        await this.moduleBuilder.buildModule();
+    }
+
+    async buildInterface(platformStr) {
+        const platform = platformFactory(platformStr);
+
+        const builder = new platform.Builder();
+        builder.setModuleName(this.ossimoFile.name);
+        builder.setInterface(this.interface);
+        builder.setBuildDir(path.join(this.constructDir, 'build', 'clients'));
+
+        builder.setup();
+
+        await builder.buildInterface();
     }
 
     isBuilt() {
@@ -90,7 +104,7 @@ class ModuleComponent extends BaseComponent {
 
     async deploy() {
         logger.info(`Deploying ${this.ossimoFile.name} module...`);
-        this.deployer.deploy();
+        //this.deployer.deploy();
     }
 }
 

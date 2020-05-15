@@ -21,6 +21,7 @@ class OssimoFile {
 
         this.type = this.__getValueOrNull(fileContents, 'type');
         this.description = this.__getValueOrNull(fileContents, 'description');
+        this.dependencies = this.__getValueOrNull(fileContents, 'dependencies');
         this.interface = this.__getValueOrNull(fileContents, 'interface');
         this.implementation = this.__getValueOrNull(fileContents, 'implementation');
     }

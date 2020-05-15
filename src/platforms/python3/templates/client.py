@@ -5,9 +5,9 @@ import logging
 
 import grpc
 
-from ossimo import {{MODULE_PACKAGE_NAME}}_pb2, {{MODULE_PACKAGE_NAME}}_pb2_grpc
+from .interface import {{MODULE_PACKAGE_NAME}}_pb2, {{MODULE_PACKAGE_NAME}}_pb2_grpc
 
-class {{MODULE_NAME}}:
+class __{{MODULE_NAME}}:
     def __init__(self, port):
         self.server_address = 'localhost:{}'.format(port)
     

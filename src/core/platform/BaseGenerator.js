@@ -9,7 +9,11 @@ import { capitalize } from '../../util/string-util';
  * The abstract base class for a Generator of some language platform.
  */
 class BaseGenerator {
-    constructor(generatedDir) {
+    constructor() {
+        this.generatedDir = null;
+    }
+
+    setGeneratedDir(generatedDir) {
         this.generatedDir = generatedDir;
     }
 
