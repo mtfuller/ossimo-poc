@@ -1,18 +1,16 @@
 const net = require('net');
 
+/**
+ * Returns a promise that resolves to a free port number.
+ */
 export function getRandomPort() {
     return new Promise((resolve, reject) => {
         try {
             const server = net.createServer();
 
             server.on('listening', () => {
-                console.log("PORT FOUND!")
                 const port = server.address().port;
-                console.log(port)
-                console.log("Closing server...")
                 server.close();
-                console.log("Server closed.")
-
                 resolve(port)
             });
 

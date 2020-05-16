@@ -1,4 +1,5 @@
 import ConstructFactory from './ConstructFactory';
+import ProjectConstruct from './constructs/ProjectConstruct';
 
 /**
  * The workspace class is used explore a given Ossimo directory, provide
@@ -24,15 +25,19 @@ class Workspace {
      * Builds the Ossimo project or component that the workspace is looking at.
      */
     async build() {
-        this.construct.build();
+        await this.construct.build();
     }
 
     /**
      * Deploys the Ossimo project or component.
      */
     async deploy() {
+        if (!this.construct instanceof ProjectConstruct) {
+            throw new Error("Only Ossimo projects can be deployed");
+        }
+
         if (!this.construct.isBuilt()) {
-            throw new Error("Workspace is not built. Build and then run deploy")
+            throw new Error("Workspace is not built. Build and then run deploy");
         }
         
         this.construct.deploy();

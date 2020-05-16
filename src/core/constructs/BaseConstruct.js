@@ -1,4 +1,5 @@
 import path from 'path';
+
 import OssimoFile from '../OssimoFile';
 
 /**
@@ -13,6 +14,7 @@ class BaseConstruct {
     constructor(ossimoFile) {
         this.constructDir = path.dirname(ossimoFile.filePath);
         this.ossimoFile = ossimoFile;
+        this.name = ossimoFile.name;
     }
 
     /**
@@ -34,13 +36,6 @@ class BaseConstruct {
      */
     isBuilt() {
         throw new Error("BaseContruct::isBuilt not implemented");
-    }
-
-    /**
-     * Deploys the built construct.
-     */
-    async deploy() {
-        throw new Error("BaseContruct::deploy not implemented");
     }
 }
 

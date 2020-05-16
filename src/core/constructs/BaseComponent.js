@@ -22,7 +22,7 @@ class BaseComponent extends BaseConstruct {
     constructor(ossimoFile) {
         super(ossimoFile);
 
-        this.dependencies = ossimoFile.dependencies;
+        this.dependencies = (ossimoFile.dependencies !== null) ? ossimoFile.dependencies : [];
         this.interface = this.__parseInterface(ossimoFile.interface);
     }
 

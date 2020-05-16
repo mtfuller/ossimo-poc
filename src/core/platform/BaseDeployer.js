@@ -3,23 +3,20 @@
  */
 class BaseDeployer {
     constructor() {
-        this.buildDir = null;
-        this.orchestratorClient = null;
+        this.directory = null;
     }
 
-    setBuildDir(buildDir) {
-        this.buildDir = buildDir;
-    }
-
-    setOrchestratorClient(orchestratorClient) {
-        this.orchestratorClient = orchestratorClient;
+    setDir(dir) {
+        this.directory = dir;
     }
 
     /**
-     * Deploy platform build using the given Orchestrator client.
+     * Starts the module as a new local process.
+     * 
+     * @param {function} callback The process callback
      */
-    async deploy() {
-        throw new Error("BaseModuleBuilder::deploy must be implemented");
+    run(callback) {
+        throw new Error("BaseDeployer::run must be implemented");
     }
 }
 

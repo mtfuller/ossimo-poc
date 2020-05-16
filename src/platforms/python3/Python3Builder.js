@@ -13,16 +13,6 @@ class Python3Builder extends BaseBuilder {
         super();
     }
 
-    async __buildPackage(sourceDir, targetPackageDir) {
-        console.log(`SRC: ${sourceDir} | TAR: ${targetPackageDir}`)
-        await copyEntireDirectory(sourceDir, targetPackageDir);
-        fs.writeFileSync(path.join(targetPackageDir, '__init__.py'),"");
-    }
-
-    /**
-     * Generate and package all the necessary build files to allow the module
-     * to be deployed.
-     */
     async buildModule() {
         const python3Generator = new Python3Generator();
         python3Generator.setGeneratedDir(this.generatedDir);
@@ -33,10 +23,8 @@ class Python3Builder extends BaseBuilder {
         const protoFilePath = python3Generator.generateProto3(this.moduleName, this._interface);
         python3Generator.generateGRPC(this.moduleName, protoFilePath);
         const grpcPath = path.join(this.generatedDir, 'grpc');
-        //const ossimoPath = path.join(this.buildDir, 'grpc');
-        //await this.__buildPackage(grpcPath, ossimoPath);
 
-        // Generate Server Package
+        // Generate Server package
         const serverFilePath = python3Generator.generateServer(this.moduleName, this._interface);
         await this.__buildPackage(grpcPath, path.join(this.buildDir, 'interface'));
         await this.__buildPackage(this.sourceDir, path.join(this.buildDir, 'implementation'));
@@ -45,8 +33,6 @@ class Python3Builder extends BaseBuilder {
         fs.mkdirSync(path.join(this.buildDir, 'implementation', 'ossimo', 'components'));
         fs.writeFileSync(path.join(this.buildDir, 'implementation', 'ossimo', '__init__.py'), "");
         fs.writeFileSync(path.join(this.buildDir, 'implementation', 'ossimo', 'components', '__init__.py'), "");
-
-        python3Generator.clean();
     }
 
     async buildInterface() {
@@ -55,11 +41,12 @@ class Python3Builder extends BaseBuilder {
 
         python3Generator.setup();
 
+        // Generate gRPC package
         const protoFilePath = python3Generator.generateProto3(this.moduleName, this._interface);
         python3Generator.generateGRPC(this.moduleName, protoFilePath);
         const grpcPath = path.join(this.generatedDir, 'grpc');
         
-        // Generate Client file
+        // Generate Client package
         const clientBuildDir = path.join(this.buildDir, 'python3');
         fs.mkdirSync(clientBuildDir);
         const clientFilePath = python3Generator.generateClient(this.moduleName, this._interface);
@@ -67,8 +54,18 @@ class Python3Builder extends BaseBuilder {
         const clientPackageFilePath = python3Generator.generateClientPackageFile(this.moduleName);
         fs.copyFileSync(clientPackageFilePath, path.join(clientBuildDir, '__init__.py'));
         await this.__buildPackage(grpcPath, path.join(clientBuildDir, 'interface'));
+    }
 
-        python3Generator.clean();
+    /**
+     * Creates a new Python3 package. It copies the source from one directory
+     * into a new target package directory.
+     * 
+     * @param {string} sourcePath The path to the source file directory
+     * @param {string} targetPath The path to final package directory
+     */
+    async __buildPackage(sourcePath, targetPath) {
+        await copyEntireDirectory(sourcePath, targetPath);
+        fs.writeFileSync(path.join(targetPath, '__init__.py'),"");
     }
 }
 

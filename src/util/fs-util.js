@@ -21,6 +21,14 @@ export function removeExistingDirectoryTree(dirToRemove) {
     fs.rmdirSync(dirToRemove);
 }
 
+/**
+ * Copy the entire directry from the source to the target path.
+ * 
+ * @param {string} sourcePath The path to the source directory 
+ * @param {string} targetPath The path to the target directory
+ * @param {Object} options An object that specifies certain parameters of the
+ *  copy operation
+ */
 export async function copyEntireDirectory(sourcePath, targetPath, options = {
     depth: 16
 }) {
@@ -37,6 +45,11 @@ export async function copyEntireDirectory(sourcePath, targetPath, options = {
     });
 }
 
+/**
+ * Creates a new directory if that path doesn't exist.
+ * 
+ * @param {string} dirPath The path to the directory to create
+ */
 export function createDirectoryIfNoneExist(dirPath) {
     if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath);

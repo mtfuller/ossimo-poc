@@ -23,7 +23,6 @@ class Environment {
             str += `\n`
         }
 
-        console.log(str);
         fs.writeFileSync(filepath, str, {encoding: 'utf-8'});
         return filepath;
     }

@@ -1,66 +1,12 @@
-import { IPCServer, IPCClient } from './Transport';
-import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { copyEntireDirectory, removeExistingDirectoryTree } from '../util/fs-util';
+
+import { IPCServer, IPCClient } from './Transport';
 import Environment from './Environment';
+import { copyEntireDirectory, removeExistingDirectoryTree } from '../util/fs-util';
 import { getRandomPort } from '../util/network';
-
-var COUNT = 8080;
-
-const StatusEnum = Object.freeze({
-    STOPPED:"STOPPED",
-    STARTING:"STARTING",
-    RUNNING:"RUNNING",
-    ERROR:"ERROR",
-    ABORTED:"ABORTED"
-});
-
-export class Deployment {
-    constructor(name, platform, deploymentDir, project) {
-        this.name = name;
-        this.platform = require(`../platforms/${platform}`);
-        this.deploymentDir = deploymentDir;
-        this.project = project;
-        this.status = StatusEnum.STOPPED;
-        this.process = null;
-    }
-
-    getStatus() {
-        return this.status;
-    }
-
-    start() {
-        try {
-            console.log(`Starting ${this.name}...`)
-            this.status = StatusEnum.STARTING;
-            const deployer = new this.platform.Deployer();
-            deployer.setDir(this.deploymentDir)
-            deployer.run((error, stdout, stderr) => {
-                
-                    this.status = StatusEnum.RUNNING;
-
-                    if (error) {
-                        this.status = StatusEnum.ERROR;
-                        console.error(`exec error: ${error}`);
-                        return;
-                    }
-        
-                    console.log(`stdout: ${stdout}`);
-                    console.error(`stderr: ${stderr}`);
-
-
-            });
-            this.status = StatusEnum.RUNNING;
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    abort() {
-        
-    }
-}
+import logger from '../util/logger';
+import { Deployment } from './Deployment';
 
 export class OssimoOrchestrator {
     constructor(port, rootDir) {
@@ -199,9 +145,10 @@ export class OssimoOrchestratorClient {
                 platform: platform,
                 project: project,
                 deploymentDir: deploymentDir
-            });
+            }, `${name}-deploy`);
         } catch (e) {
-            throw new Error("Could not deploy. Server running?")
+            logger.error("Could not deploy module. Server running?");
+            throw new Error(e);
         }
 
         return response;
@@ -215,9 +162,10 @@ export class OssimoOrchestratorClient {
                 action: "project",
                 name: name,
                 project: data
-            });
+            }, `${name}-project`);
         } catch (e) {
-            throw new Error("Could not deploy. Server running?")
+            logger.error("Could not create project. Server running?");
+            throw new Error(e)
         }
 
         return response;

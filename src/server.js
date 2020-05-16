@@ -1,8 +1,7 @@
 const yargs = require('yargs');
 const path = require('path');
-const net = require('net');
 
-import { OssimoOrchestrator, Deployment } from './orchestrator';
+import { OssimoOrchestrator } from './orchestrator';
 
 const DEFAULT_PORT = 13131;
 

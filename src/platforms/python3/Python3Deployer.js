@@ -1,6 +1,6 @@
-import BaseDeployer from '../../core/platform/BaseDeployer';
-
 import { exec } from 'child_process';
+
+import BaseDeployer from '../../core/platform/BaseDeployer';
 
 /**
  * The Deployer for the Python3 platform.
@@ -8,11 +8,6 @@ import { exec } from 'child_process';
 class Python3Deployer extends BaseDeployer {
     constructor() {
         super();
-        this.directory = null
-    }
-
-    setDir(dir) {
-        this.directory = dir;
     }
 
     run(callback) {
@@ -22,7 +17,7 @@ class Python3Deployer extends BaseDeployer {
                 console.error(err);
             });
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
         
     }

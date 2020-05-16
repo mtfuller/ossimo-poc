@@ -21,7 +21,6 @@ class BaseGenerator {
      * Removes all generated files.
      */
     clean() {
-        console.log("REMOVING GENERATED")
         if (fs.existsSync(this.generatedDir)) {
             removeExistingDirectoryTree(this.generatedDir);
         }

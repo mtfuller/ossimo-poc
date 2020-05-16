@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 
 import BaseConstruct from '../../core/constructs/BaseConstruct';
-import Transport from '../../core/Transport';
 import { OssimoOrchestratorClient } from '../../orchestrator';
 import ConstructFactory from '../ConstructFactory';
 import logger from '../../util/logger';
@@ -22,7 +21,7 @@ class ProjectConstruct extends BaseConstruct {
     constructor(ossimoFile) {
         super(ossimoFile);
 
-        logger.info(`Parsing ${this.ossimoFile.name} project...`);
+        logger.debug(`Parsing ${this.name} project...`);
 
         this.components = [];
         const componentDir = path.join(this.constructDir, 'components');
@@ -33,11 +32,13 @@ class ProjectConstruct extends BaseConstruct {
                 return stat.isDirectory();
             });
 
-            logger.debug("Found the following components:")
             this.components = directories.map(dirname => {
                 const dirPath = path.join(componentDir, dirname)
                 return ConstructFactory(dirPath)
             });
+            const componentsMessage = this.components.map(c => `    - ${c.name} (${c.constructor.name})`)
+                .join('\n');
+            logger.debug(`Found the following components:\n${componentsMessage}`);
         }
 
         this.modules = {};
@@ -46,68 +47,65 @@ class ProjectConstruct extends BaseConstruct {
     }
 
     clean() {
-        logger.info(`Cleaning ${this.ossimoFile.name} project...`);
+        logger.info(`Cleaning ${this.name} project...`);
         this.components.forEach(component => {
             component.clean();
         });
     }
 
     async build() {
-        logger.info(`Building ${this.ossimoFile.name} project...`);
+        logger.info(`Building ${this.name} project...`);
+
         const buildDir = path.join(this.constructDir, 'build');
         if(fs.existsSync(buildDir)) removeExistingDirectoryTree(buildDir);
         fs.mkdirSync(buildDir);
 
-        for (const component of this.components) {
-            await component.build();
+        logger.debug("Building all components...");
+        const buildingComponents = this.components.map(c => c.build());
+        await Promise.all(buildingComponents).catch(err => {
+            logger.error("Error when building modules:")
+            logger.error(err);
+        });
 
-            if (component instanceof ModuleComponent) {
-                console.log("MODULE!!");
-                const targetDirectory = path.join(buildDir, component.ossimoFile.name);
-                fs.mkdirSync(targetDirectory);
-                await copyEntireDirectory(component.moduleBuilder.buildDir, targetDirectory);
-            }
-        }
+        logger.debug("Moving module build artifacts to project build folder...")
+        const moduleComponents = this.components.filter(c => c instanceof ModuleComponent);
+        const copyingModuleBuilds = moduleComponents.map(m => {
+            const targetDirectory = path.join(buildDir, m.name);
+            fs.mkdirSync(targetDirectory);
+            return copyEntireDirectory(m.moduleBuilder.buildDir, targetDirectory); 
+        });
+        await Promise.all(copyingModuleBuilds).catch(err => {
+            logger.error("Error when copying module builds:")
+            logger.error(err);
+        });
 
-        const componentMap = {};
-        this.components.forEach(c => componentMap[c.ossimoFile.name] = c);
+        const moduleMap = {};
+        moduleComponents.forEach(m => moduleMap[m.name] = m);
 
-        for (const componentName in componentMap) {
-            const component = componentMap[componentName];
+        const dependentModules = moduleComponents.filter(m => m.dependencies !== null);
+        for (const module of dependentModules) {
+            const moduleName = module.name;
+            const dependencies = module.dependencies.map(d => moduleMap[d]);
+            const platform = module.implementation.platform.name;
 
-            if (component instanceof ModuleComponent) {
-                console.log(`NAME: ${component.ossimoFile.name}`);
-                console.log(`DEPS: ${component.dependencies}`);
-                console.log(`PLAT: ${component.implementation.platform.name}`);
+            logger.debug(`Building all necessary dependencies for ${moduleName}...`)
+            const dependencyInterfaces = dependencies.map(dep => dep.buildInterface(platform));
+            await Promise.all(dependencyInterfaces).catch(err => {
+                logger.error("Error when building dependency interfaces:")
+                logger.error(err);
+            });
 
-                console.log(component.dependencies);
-                if (component.dependencies === null)
-                    continue;
-
-                for (const dep of component.dependencies) {
-                    console.log(`DEP: ${dep}`);
-                    const dependency = componentMap[dep];
-                    console.log(`DEP_PLATFORM: ${component.implementation.platform.name}`)
-                    await dependency.buildInterface(component.implementation.platform.name);
-                    
-                    const sourceDir = path.join(dependency.constructDir, 'build', 'clients', component.implementation.platform.name);
-                    const targetDir = path.join(buildDir, component.ossimoFile.name, 'implementation', 'ossimo', 'components', dep);
-                    try {
-                        console.log("HELLO!");
-                    await copyEntireDirectory(sourceDir, targetDir);
-                    } catch (error) {
-                        console.error(error);
-                    }
-                    
-
-                }
-                // const builder = new component.implementation.platform.Builder();
-                // builder.setModuleName(this.ossimoFile.name);
-                // builder.setInterface(component.interface);
-                // builder.setBuildDir(path.join(this.constructDir, 'build', 'sdk'));
-                // builder.setup();
-                // builder.buildSdk();
-            }
+            logger.debug(`Injecting all dependency interfaces for ${moduleName}...`)
+            const injectingInterfaces = dependencies.map(dep => {
+                logger.debug(`Injecting interface for ${dep.name} into ${moduleName}...`);
+                const sourceDir = path.join(dep.constructDir, 'build', 'clients', platform);
+                const targetDir = path.join(buildDir, moduleName, 'implementation', 'ossimo', 'components', dep.name);
+                return copyEntireDirectory(sourceDir, targetDir);
+            });
+            await Promise.all(injectingInterfaces).catch(err => {
+                logger.error("Error when copying interfaces:")
+                logger.error(err);
+            });
         }
     }
 
@@ -115,37 +113,36 @@ class ProjectConstruct extends BaseConstruct {
         return true
     }
 
+    /**
+     * Deploy all of the projects modules to the Ossimo Orchestrator server.
+     */
     async deploy() {
-        logger.info("Deploying project...");
-        const componentMap = {};
-        this.components.forEach(c => componentMap[c.ossimoFile.name] = c);
+        logger.info(`Deploying ${this.name} project...`);
 
+        const moduleComponents = this.components.filter(c => c instanceof ModuleComponent);
+        
         const projectData = {};
-        for (const componentName in componentMap) {
-            const component = componentMap[componentName];
-            console.log(componentName);
-            projectData[componentName] = [];
-            if (component.dependencies === null) continue;
-            for (const dep of component.dependencies) {
-                console.log(dep);
-                projectData[componentName].push(dep);
-            }
-        }
-        console.log(projectData);
+        moduleComponents.forEach(m => projectData[m.name] = m.dependencies);
 
-        await this.deployer.project(this.ossimoFile.name, projectData)
+        logger.debug("Configuring project in Ossimo orchestrator...");
+        await this.deployer.project(this.name, projectData)
 
-        let counter = 0;
-        for (const component of this.components) {
-            logger.info(`Deploying ${component.ossimoFile.name}...`)
+        logger.debug("Deploying each component...");
+        const deployedComponents = this.components.map(component => {
+            logger.info(`Deploying ${component.name}...`)
 
-            await this.deployer.deploy(
-                component.ossimoFile.name,
+            return this.deployer.deploy(
+                component.name,
                 component.implementation.platform.name,
-                path.join(this.constructDir, 'build', component.ossimoFile.name),
-                this.ossimoFile.name
-            )
-        }
+                path.join(this.constructDir, 'build', component.name),
+                this.name
+            ).then(data => {
+                logger.info(`Deployed ${component.name}.`)
+            });
+        })
+        await Promise.all(deployedComponents);
+
+        logger.info("Finished deployment.")
     }
 }
 

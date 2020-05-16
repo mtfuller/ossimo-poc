@@ -20,8 +20,6 @@ class Python3Generator extends BaseGenerator {
 
         createDirectoryIfNoneExist(path.join(this.generatedDir, 'grpc'))
 
-        console.log(targetDirectory);
-
         execSync(`python -m grpc_tools.protoc -I ./proto/ --python_out=./grpc --grpc_python_out=./grpc ./proto/${packageName}.proto`, {
             cwd: targetDirectory
         });

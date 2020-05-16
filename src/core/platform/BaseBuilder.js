@@ -37,7 +37,6 @@ class BaseBuilder {
      */
     clean() {
         if (fs.existsSync(this.buildDir)) {
-            console.log("REMOVING");
             removeExistingDirectoryTree(this.buildDir);
         }
     }
@@ -46,7 +45,6 @@ class BaseBuilder {
      * Clears the build directory of all contents.
      */
     setup() {
-        console.log("SETUP");
         this.clean();
 
         fs.mkdirSync(this.buildDir);
@@ -61,11 +59,11 @@ class BaseBuilder {
     }
 
     /**
-     * Generate and package all the necessary build files to allow the module
-     * to be deployed.
+     * Generate and package all the necessary client code to interface with a
+     * module.
      */
-    async buildSdk() {
-        throw new Error("BaseBuilder::buildSdk must be implemented");
+    async buildInterface() {
+        throw new Error("BaseBuilder::buildInterface must be implemented");
     }
 }
 
