@@ -16,3 +16,5 @@ owjfoiwej
  - [ ] Ensure that `ossimo` can build and deploy a project that has two Controller comonents, each containing a Module component, that communicate with each other.
  - [ ] Run `ossimo create component` in a project or component to create a generate a stub controller or module.
  - [ ] Run `ossimo init` in an empty directory to create a stub project.
+
+
